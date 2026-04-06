@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ToastProvider } from '@/components/ToastProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -40,7 +42,10 @@ export default function RootLayout({
           <link rel="icon" href="/favicon.ico" />
         </head>
         <body className="antialiased">
-          {children}
+          <ErrorBoundary>
+            {children}
+            <ToastProvider />
+          </ErrorBoundary>
         </body>
       </html>
     </ClerkProvider>

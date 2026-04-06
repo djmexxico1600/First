@@ -9,7 +9,9 @@
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push:pg"
+    "db:push": "drizzle-kit push:pg",
+    "type-check": "tsc --noEmit",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -31,7 +33,10 @@
     "@radix-ui/react-slot": "^2.0.0",
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-dropdown-menu": "^2.0.0",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "framer-motion": "^11.0.0",
+    "nanoid": "^4.0.0",
+    "next-safe-action": "^7.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
