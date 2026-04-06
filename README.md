@@ -12,110 +12,85 @@ High-quality beats marketplace, artist management subscriptions, and 2010 Cadill
 - **Email**: Resend
 - **UI**: Tailwind CSS + shadcn/ui
 
-## Quick Start
+## 📚 Documentation
 
-### 1. Install Dependencies
+Start here based on your needs:
 
-```bash
-npm install
-```
+| Document | Purpose |
+|----------|---------|
+| [**QUICK_START.md**](./QUICK_START.md) | Get running locally in 30 minutes (TL;DR) |
+| [**DEPLOYMENT.md**](./DEPLOYMENT.md) | Step-by-step production deployment guide |
+| [**FEATURES.md**](./FEATURES.md) | Complete feature list and capabilities |
+| [**ARCHITECTURE.md**](./ARCHITECTURE.md) | Technical design, data flows, and patterns |
+| [**API_REFERENCE.md**](./API_REFERENCE.md) | All Server Actions, webhooks, and types |
 
-### 2. Configure Environment Variables
+## Quick Start (TL;DR)
 
-Copy `.env.example` to `.env.local` and fill in your credentials:
-
-```bash
-cp .env.example .env.local
-```
-
-Required services:
-- **Neon Database**: Create PostgreSQL database, get connection URL
-- **Clerk**: Sign up, create application, get publishable & secret keys
-- **Stripe**: Create account, set up products/prices, get API keys
-- **Cloudflare R2**: Create account, bucket, and get credentials
-- **Resend**: Sign up, get API key
-
-### 3. Set Up Database
-
-Generate migrations from schema:
+See [QUICK_START.md](./QUICK_START.md) for the fastest path to local development.
 
 ```bash
-npm run db:generate
+npm install && npm run db:generate && npm run db:migrate && npm run dev
 ```
 
-Run migrations:
+Then configure your `.env.local` with credentials from:
+- **Neon** (PostgreSQL)
+- **Clerk** (Authentication)  
+- **Stripe** (Payments)
+- **Cloudflare R2** (Storage)
+- **Resend** (Email)
 
-```bash
-npm run db:migrate
-```
+## Architecture
 
-### 4. Configure Webhooks
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for:
+- Complete system design and data flows
+- Database schema with relations
+- Security layers and best practices
+- Performance optimizations
+- Scaling considerations
+- Monitoring & observability
+- Code organization philosophy
 
-Set up webhook endpoints in your provider dashboards:
-
-**Clerk Webhooks** (in Clerk Dashboard → Webhooks):
-- URL: `https://yourdomain.com/api/webhooks/clerk`
-- Events: `user.created`, `user.updated`, `user.deleted`
-
-**Stripe Webhooks** (in Stripe Dashboard → Webhooks):
-- URL: `https://yourdomain.com/api/webhooks/stripe`
-- Events: `checkout.session.completed`, `invoice.paid`, `customer.subscription.*`
-
-### 5. Start Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
-## Project Structure
+### System Overview
 
 ```
-src/
-├── app/
-│   ├── (marketing)/          # Public pages: home, beats, management, car
-│   ├── (dashboard)/          # Protected artist dashboard
-│   ├── (admin)/              # Admin panel (future)
-│   ├── api/webhooks/         # Stripe & Clerk webhooks
-│   └── layout.tsx            # Root layout with Clerk provider
-├── lib/
-│   ├── db/                   # Database schema, client, migrations
-│   ├── clerk/                # Clerk webhook handler
-│   ├── stripe/               # Stripe actions & products config
-│   ├── r2/                   # R2 presigned URLs & upload actions
-│   ├── email/                # Email templates & Resend service
-│   ├── beats/                # Beat queries
-│   ├── car/                  # Car post queries
-│   └── validators.ts         # Zod schemas
-├── components/               # Reusable shadcn/ui components
-└── middleware.ts             # Clerk middleware for protected routes
+React 19 Client → Next.js 15 Backend → External APIs
+├─ Server Components (zero JS)
+├─ Client Components (sparse)
+├─ Server Actions (type-safe mutations)
+├─ Route Handlers (webhooks)
+└─ Middleware (Clerk auth)
+
+↓
+
+Database (Neon Postgres)
+├─ 7 tables with relations
+├─ Auto-migrations (Drizzle)
+└─ Type-safe queries
+
+↓
+
+Services
+├─ Clerk (auth)
+├─ Stripe (payments)
+├─ R2 (storage)
+├─ Resend (email)
+└─ Cloudflare Pages (hosting)
 ```
 
-## Features
+## Features Implemented
 
-### 🎵 Beats Store
-- Browse high-quality production beats
-- Lease or exclusive purchase options
-- Direct R2 download after purchase
-- Audio preview player (coming soon)
-
-### 📊 Management Tiers
-- **Basic** ($29.99/mo): 1 SoundCloud repost, 2 IG promos
-- **Pro** ($79.99/mo): Unlimited reposts, 4 IG promos, playlist placements
-- **VIP** ($199.99/mo): Full management, dedicated account manager, daily IG content
-
-### 🏎️ Car Content
-- 2010 Cadillac CTS build showcase
-- Specifications & modification tracking
-- Build progress gallery
-- Newsletter signup
-
-### 🔐 Artist Dashboard
-- View purchase history & subscription status
-- Upload audio for DistroKid distribution
-- Track upload status & fulfillment
-- Access to exclusive content
+See [FEATURES.md](./FEATURES.md) for complete feature list including:
+- ✅ Beats marketplace (lease + exclusive licensing)
+- ✅ Tiered artist management (Basic/Pro/VIP)
+- ✅ Car build content gallery
+- ✅ Artist dashboard with upload forms
+- ✅ Admin fulfillment interface
+- ✅ Error handling & recovery
+- ✅ Component library & accessibility
+- ✅ Analytics & monitoring infrastructure
+- ✅ Toast notifications
+- ✅ Rate limiting
+- ✅ Production-grade logging
 
 ## Core Flows
 
@@ -147,40 +122,37 @@ src/
 
 ## Deployment
 
-### Cloudflare Pages (Recommended)
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete step-by-step instructions including:
+- Service setup (Neon, Clerk, Stripe, R2, Resend)
+- Webhook configuration
+- Local testing
+- Production deployment to Cloudflare Pages
+- Monitoring and maintenance
 
-1. Push repository to GitHub
-2. Connect repo to Cloudflare Pages
-3. Set build command: `npm run build`
-4. Set output directory: `.next`
-5. Add environment variables in Cloudflare dashboard
-6. Deploy!
+### Quick Deploy
 
-### Environment Variables for Production
+```bash
+git push origin main  # Automatic Cloudflare Pages deployment
+```
 
-Same as `.env.local`, plus:
-- `NEXT_PUBLIC_APP_URL`: Your production domain
+## Admin Interface
 
-## Admin Panel (Future)
+Protected admin routes at `/admin` (role-based access):
+- ✅ Dashboard with quick stats
+- ✅ Upload queue with approve/reject
+- 🔄 Beat management (add/edit/publish)
+- 🔄 Revenue & analytics dashboard
+- 🔄 User management & tier overrides
 
-Protected admin routes at `/admin`:
-- Beat management (add/edit/publish)
-- Upload queue & fulfillment
-- Revenue & analytics dashboard
-- Car post management
-- User management & tier overrides
+## API Documentation
 
-## API Endpoints
-
-### Webhooks
-- `POST /api/webhooks/stripe` - Stripe payment events
-- `POST /api/webhooks/clerk` - Clerk user sync
-
-### Server Actions
-- `createBeatCheckoutSession(beatId, licenseType)` - Start beat purchase
-- `createSubscriptionCheckoutSession(tier)` - Start subscription
-- `getUploadUrl(fileName, contentType, type)` - Get R2 presigned URL
-- `createArtistUpload(r2Key, metadata)` - Record upload
+See [API_REFERENCE.md](./API_REFERENCE.md) for complete documentation of:
+- **Server Actions**: Type-safe mutation functions
+- **Webhooks**: Stripe & Clerk event handlers
+- **Database Types**: Auto-generated from Drizzle schema
+- **Error Codes**: Response formats and error handling
+- **Rate Limiting**: Protecting endpoints
+- **Testing**: Local webhook testing with Stripe CLI
 
 ## Security
 
