@@ -1,7 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "djmexxicoexclusives",
-  "main": ".open-next/index.js",
   "compatibility_date": "2026-04-06",
   "observability": {
     "enabled": true
@@ -18,5 +17,10 @@
         }
       ]
     }
+  },
+  "site": {
+    "bucket": ".next",
+    "include": ["**/*"],
+    "exclude": ["tests/**", "**.test.*"]
   }
 }
