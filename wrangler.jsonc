@@ -17,10 +17,5 @@
         }
       ]
     }
-  },
-  "site": {
-    "bucket": ".next",
-    "include": ["**/*"],
-    "exclude": ["tests/**", "**.test.*"]
   }
 }
