@@ -27,7 +27,9 @@ class Analytics {
 
   // Common events
   trackPageView(path: string, title?: string) {
-    return this.track('page_view', { path, title });
+    const props: EventProperties = { path };
+    if (title) props.title = title;
+    return this.track('page_view', props);
   }
 
   trackBeatPlay(beatId: string, beatTitle: string) {
@@ -47,11 +49,15 @@ class Analytics {
   }
 
   trackUpload(title: string, genre?: string) {
-    return this.track('artist_upload', { title, genre });
+    const props: EventProperties = { title };
+    if (genre) props.genre = genre;
+    return this.track('artist_upload', props);
   }
 
   trackError(error: string, context?: string) {
-    return this.track('error', { error, context });
+    const props: EventProperties = { error };
+    if (context) props.context = context;
+    return this.track('error', props);
   }
 
   trackSignup(method: 'email' | 'google' | 'discord') {

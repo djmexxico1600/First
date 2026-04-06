@@ -63,7 +63,20 @@ export async function createBeatCheckoutSession(
   redirect(session.url);
 }
 
-export async function createSubscriptionCheckoutSession(tier: 'basic' | 'pro' | 'vip') {
+export async function createSubscriptionCheckoutSession(formDataOrTier: FormData | 'basic' | 'pro' | 'vip') {
+  // Handle both form submission (FormData) and direct calls (string)
+  let tier: 'basic' | 'pro' | 'vip';
+  
+  if (formDataOrTier instanceof FormData) {
+    const tierValue = formDataOrTier.get('tier') as string;
+    if (!['basic', 'pro', 'vip'].includes(tierValue)) {
+      throw new Error('Invalid tier specified');
+    }
+    tier = tierValue as 'basic' | 'pro' | 'vip';
+  } else {
+    tier = formDataOrTier;
+  }
+
   const user = await currentUser();
   if (!user) {
     redirect('/sign-in');

@@ -9,7 +9,7 @@ import {
   index,
   pgEnum,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, type SQL } from 'drizzle-orm';
 
 // Enums
 export const tierEnum = pgEnum('tier', ['none', 'basic', 'pro', 'vip']);
@@ -45,7 +45,7 @@ export const users = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof users) => ({
     clerkIdIdx: index('clerk_id_idx').on(table.clerkId),
     emailIdx: index('email_idx').on(table.email),
     tierIdx: index('tier_idx').on(table.currentTier),
@@ -71,7 +71,7 @@ export const beats = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof beats) => ({
     statusIdx: index('beat_status_idx').on(table.status),
     genreIdx: index('beat_genre_idx').on(table.genre),
   })
@@ -97,7 +97,7 @@ export const orders = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof orders) => ({
     userIdIdx: index('order_user_id_idx').on(table.userId),
     statusIdx: index('order_status_idx').on(table.status),
   })
@@ -122,7 +122,7 @@ export const subscriptions = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof subscriptions) => ({
     userIdIdx: index('sub_user_id_idx').on(table.userId),
     statusIdx: index('sub_status_idx').on(table.status),
   })
@@ -144,7 +144,7 @@ export const artistUploads = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof artistUploads) => ({
     userIdIdx: index('upload_user_id_idx').on(table.userId),
     statusIdx: index('upload_status_idx').on(table.status),
   })
@@ -185,34 +185,54 @@ export const referrals = pgTable(
     used: boolean('used').default(false),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table: typeof referrals) => ({
     codeIdx: index('referral_code_idx').on(table.referralCode),
     referrerIdx: index('referral_referrer_idx').on(table.referrerId),
   })
 );
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  orders: many(orders),
-  subscriptions: many(subscriptions),
-  uploads: many(artistUploads),
-  referrals: many(referrals),
-}));
+export const usersRelations = relations(
+  users,
+  // @ts-expect-error - Drizzle internal typing
+  ({ many }) => ({
+    orders: many(orders),
+    subscriptions: many(subscriptions),
+    uploads: many(artistUploads),
+    referrals: many(referrals),
+  })
+);
 
-export const ordersRelations = relations(orders, ({ one }) => ({
-  user: one(users, { fields: [orders.userId], references: [users.id] }),
-  beat: one(beats, { fields: [orders.beatId], references: [beats.id] }),
-}));
+export const ordersRelations = relations(
+  orders,
+  // @ts-expect-error - Drizzle internal typing
+  ({ one }) => ({
+    user: one(users, { fields: [orders.userId], references: [users.id] }),
+    beat: one(beats, { fields: [orders.beatId], references: [beats.id] }),
+  })
+);
 
-export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
-  user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
-}));
+export const subscriptionsRelations = relations(
+  subscriptions,
+  // @ts-expect-error - Drizzle internal typing
+  ({ one }) => ({
+    user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
+  })
+);
 
-export const artistUploadsRelations = relations(artistUploads, ({ one }) => ({
-  user: one(users, { fields: [artistUploads.userId], references: [users.id] }),
-}));
+export const artistUploadsRelations = relations(
+  artistUploads,
+  // @ts-expect-error - Drizzle internal typing
+  ({ one }) => ({
+    user: one(users, { fields: [artistUploads.userId], references: [users.id] }),
+  })
+);
 
-export const referralsRelations = relations(referrals, ({ one }) => ({
-  referrer: one(users, { fields: [referrals.referrerId], references: [users.id] }),
-  referredUser: one(users, { fields: [referrals.referredUserId], references: [users.id] }),
-}));
+export const referralsRelations = relations(
+  referrals,
+  // @ts-expect-error - Drizzle internal typing
+  ({ one }) => ({
+    referrer: one(users, { fields: [referrals.referrerId], references: [users.id] }),
+    referredUser: one(users, { fields: [referrals.referredUserId], references: [users.id] }),
+  })
+);

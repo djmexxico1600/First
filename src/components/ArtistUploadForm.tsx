@@ -85,10 +85,10 @@ export function ArtistUploadForm() {
 
       // Create artist upload record in database
       await createArtistUpload(key, {
-        title: data.title,
-        artist: data.artist,
-        genre: data.genre,
-        upc: data.upc,
+        title: data.title as string,
+        artist: data.artist as string,
+        genre: data.genre as string,
+        upc: (data.upc as string) || undefined,
       });
 
       setUploadSuccess(true);

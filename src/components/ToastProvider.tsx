@@ -10,6 +10,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       const timer = setTimeout(onDismiss, toast.duration);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [toast.duration, onDismiss]);
 
   const icons = {

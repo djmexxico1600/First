@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createErrorResponse, isAppError } from './errors';
+import { createErrorResponse } from './errors';
 import { logger } from './logger';
 
 export type ApiResponse<T = any> = {

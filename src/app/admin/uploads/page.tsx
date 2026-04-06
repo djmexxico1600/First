@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db/client';
 import { users, artistUploads } from '@/lib/db/schema';
