@@ -92,47 +92,69 @@ export function getRequiredEnv(key: string): string {
 }
 
 /**
- * Type-safe environment config
- * Use this for accessing environment variables with proper types
+ * Type-safe environment config with lazy initialization
+ * Environment variables are only validated when accessed, not at import time.
+ * This allows the build process to complete without requiring all env vars.
  */
-export const env = {
-  // Database
-  databaseUrl: getRequiredEnv('DATABASE_URL'),
+export const env = new Proxy({} as Record<string, any>, {
+  get(_target, prop: string | symbol) {
+    if (typeof prop !== 'string') return undefined;
 
-  // Clerk Auth
-  clerkSecretKey: getRequiredEnv('CLERK_SECRET_KEY'),
-  clerkPublishableKey: getRequiredEnv('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'),
-  clerkWebhookSecret: getEnv('CLERK_WEBHOOK_SECRET'),
+    switch (prop) {
+      // Database
+      case 'databaseUrl':
+        return getRequiredEnv('DATABASE_URL');
+      // Clerk Auth
+      case 'clerkSecretKey':
+        return getRequiredEnv('CLERK_SECRET_KEY');
+      case 'clerkPublishableKey':
+        return getRequiredEnv('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY');
+      case 'clerkWebhookSecret':
+        return getEnv('CLERK_WEBHOOK_SECRET');
+      // Stripe Payments
+      case 'stripeSecretKey':
+        return getRequiredEnv('STRIPE_SECRET_KEY');
+      case 'stripePublishableKey':
+        return getRequiredEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
+      case 'stripeWebhookSecret':
+        return getEnv('STRIPE_WEBHOOK_SECRET');
+      // Cloudflare R2
+      case 'r2AccessKeyId':
+        return getEnv('R2_ACCESS_KEY_ID');
+      case 'r2SecretAccessKey':
+        return getEnv('R2_SECRET_ACCESS_KEY');
+      case 'r2AccountId':
+        return getEnv('NEXT_PUBLIC_R2_ACCOUNT_ID');
+      // Resend Email
+      case 'resendApiKey':
+        return getEnv('RESEND_API_KEY');
+      // App Config
+      case 'appUrl':
+        return getRequiredEnv('NEXT_PUBLIC_APP_URL');
+      case 'logEndpoint':
+        return getEnv('NEXT_PUBLIC_LOG_ENDPOINT');
+      // Environment flags
+      case 'isDev':
+        return process.env.NODE_ENV === 'development';
+      case 'isProd':
+        return process.env.NODE_ENV === 'production';
+      case 'isTest':
+        return process.env.NODE_ENV === 'test';
+      default:
+        return undefined;
+    }
+  },
+});
 
-  // Stripe Payments
-  stripeSecretKey: getRequiredEnv('STRIPE_SECRET_KEY'),
-  stripePublishableKey: getRequiredEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'),
-  stripeWebhookSecret: getEnv('STRIPE_WEBHOOK_SECRET'),
-
-  // Cloudflare R2
-  r2AccessKeyId: getEnv('R2_ACCESS_KEY_ID'),
-  r2SecretAccessKey: getEnv('R2_SECRET_ACCESS_KEY'),
-  r2AccountId: getEnv('NEXT_PUBLIC_R2_ACCOUNT_ID'),
-
-  // Resend Email
-  resendApiKey: getEnv('RESEND_API_KEY'),
-
-  // App Config
-  appUrl: getRequiredEnv('NEXT_PUBLIC_APP_URL'),
-  logEndpoint: getEnv('NEXT_PUBLIC_LOG_ENDPOINT'),
-
-  // Environment
-  isDev: process.env.NODE_ENV === 'development',
-  isProd: process.env.NODE_ENV === 'production',
-  isTest: process.env.NODE_ENV === 'test',
-} as const;
-
-// Validate on module load in production
+// Validate on module load in production (but catch errors gracefully during build)
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
-  try {
-    validateEnvironment();
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
+  // Only validate if not in the Next.js build process
+  if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    try {
+      validateEnvironment();
+    } catch (error) {
+      console.error(error);
+      process.exit(1);
+    }
   }
 }

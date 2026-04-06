@@ -1,11 +1,12 @@
 'use server';
 
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { beats } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function getBeats() {
   try {
+    const db = getDb();
     const allBeats = await db
       .select()
       .from(beats)
@@ -21,6 +22,7 @@ export async function getBeats() {
 
 export async function getBeatById(beatId: string) {
   try {
+    const db = getDb();
     const beat = await db
       .select()
       .from(beats)

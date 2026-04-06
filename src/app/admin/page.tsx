@@ -1,10 +1,11 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 async function checkAdminAccess(user: any) {
+  const db = getDb();
   if (!user) return false;
 
   // Check if user is admin by email or role

@@ -1,7 +1,7 @@
 'use server';
 
 import { currentUser } from '@clerk/nextjs/server';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { subscriptions, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { ServerActionResponse } from '@/types';
@@ -19,6 +19,7 @@ export async function createManagementCheckoutSession(
 }
 
 export async function cancelSubscription(): ServerActionResponse {
+  const db = getDb();
   const user = await currentUser();
   if (!user) {
     return { success: false, error: 'Unauthorized' };
@@ -64,6 +65,7 @@ export async function cancelSubscription(): ServerActionResponse {
 }
 
 export async function getSubscription() {
+  const db = getDb();
   const user = await currentUser();
   if (!user) {
     return null;

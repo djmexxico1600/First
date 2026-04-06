@@ -1,10 +1,11 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function handleClerkWebhook(rawBody: string) {
+  const db = getDb();
   const headerPayload = await headers();
   const svixId = headerPayload.get('svix-id');
   const svixTimestamp = headerPayload.get('svix-timestamp');

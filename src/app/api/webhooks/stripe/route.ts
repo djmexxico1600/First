@@ -1,12 +1,13 @@
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users, orders, subscriptions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 export async function POST(req: Request) {
+  const db = getDb();
   const body = await req.text();
   const sig = (await headers()).get('stripe-signature');
 

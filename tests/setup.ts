@@ -8,25 +8,20 @@ import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 
 /**
  * Validate test environment variables before any test runs
+ * Note: For unit tests (no external services), we provide mock defaults
+ * For integration/e2e tests, these must be set in .env.test
  */
 beforeAll(async () => {
-  // Check required env vars for testing
-  const requiredEnv = [
-    'DATABASE_URL',
-    'CLERK_SECRET_KEY',
-    'STRIPE_SECRET_KEY',
-  ];
+  // Provide mock defaults for unit tests (can be overridden in .env.test)
+  process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/djmexxico_test';
+  process.env.CLERK_SECRET_KEY ??= 'sk_test_mock_key';
+  process.env.STRIPE_SECRET_KEY ??= 'sk_test_mock_key';
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??= 'pk_test_mock_key';
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ??= 'pk_test_mock_key';
+  process.env.NEXT_PUBLIC_APP_URL ??= 'http://localhost:3000';
+  process.env.NODE_ENV ??= 'test';
 
-  const missing = requiredEnv.filter((key) => !process.env[key]);
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required test environment variables: ${missing.join(', ')}\n` +
-        `Please copy .env.test and fill in test credentials.`
-    );
-  }
-
-  console.log('✅ Test environment validated');
+  console.log('✅ Test environment initialized (using mocks for unit tests)');
 });
 
 /**

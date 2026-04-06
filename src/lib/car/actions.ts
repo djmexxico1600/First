@@ -1,10 +1,11 @@
 'use server';
 
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { carPosts } from '@/lib/db/schema';
 
 export async function getCarPosts() {
   try {
+    const db = getDb();
     const posts = await db
       .select()
       .from(carPosts)

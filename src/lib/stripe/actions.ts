@@ -2,7 +2,7 @@
 
 import Stripe from 'stripe';
 import { currentUser } from '@clerk/nextjs/server';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
@@ -13,6 +13,7 @@ export async function createBeatCheckoutSession(
   beatId: string,
   licenseType: 'lease' | 'exclusive'
 ) {
+  const db = getDb();
   const user = await currentUser();
   if (!user) {
     redirect('/sign-in');
@@ -77,6 +78,7 @@ export async function createSubscriptionCheckoutSession(formDataOrTier: FormData
     tier = formDataOrTier;
   }
 
+  const db = getDb();
   const user = await currentUser();
   if (!user) {
     redirect('/sign-in');

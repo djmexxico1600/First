@@ -1,11 +1,12 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users, artistUploads } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { Badge } from '@/components/index';
 
 async function checkAdminAccess(user: any) {
+  const db = getDb();
   if (!user) return false;
   const adminEmails = ['admin@djmexxico.com', 'djmexxico@example.com'];
   if (adminEmails.includes(user.emailAddresses[0]?.emailAddress || '')) {
@@ -20,6 +21,7 @@ async function checkAdminAccess(user: any) {
 }
 
 export default async function AdminUploadsPage() {
+  const db = getDb();
   const user = await currentUser();
   const isAdmin = await checkAdminAccess(user);
   if (!isAdmin) {

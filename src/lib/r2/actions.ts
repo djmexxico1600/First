@@ -2,7 +2,7 @@
 
 import { getPresignedUploadUrl } from './client';
 import { currentUser } from '@clerk/nextjs/server';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users, artistUploads } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
@@ -28,6 +28,7 @@ export async function createArtistUpload(
   r2Key: string,
   metadata: { title: string; artist: string; genre?: string; upc?: string }
 ) {
+  const db = getDb();
   const user = await currentUser();
   if (!user) redirect('/sign-in');
 

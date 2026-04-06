@@ -1,11 +1,12 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { db } from '@/lib/db/client';
+import { getDb } from '@/lib/db/client';
 import { users, subscriptions, orders } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
+  const db = getDb();
   const user = await currentUser();
   if (!user) {
     redirect('/sign-in');
