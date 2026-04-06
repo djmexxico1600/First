@@ -1,8 +1,19 @@
 import Link from 'next/link';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { currentUser } from '@clerk/nextjs/server';
+import '@/styles/globals.css';
+import { Toaster } from '@/components/ui/Toaster';
+import type { Metadata } from 'next';
 
-export default async function MarketingLayout({
+export const metadata: Metadata = {
+  title: 'DJMEXXICO - Beats Marketplace & Artist Management',
+  description: 'High-quality beats marketplace, tiered artist management, and 2010 Cadillac CTS build content.',
+  icons: {
+    icon: '/favicon.ico',
+  },
+};
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -10,7 +21,9 @@ export default async function MarketingLayout({
   const user = await currentUser();
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased">
+        <div className="min-h-screen bg-slate-950">
       <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-cyan-400 hover:text-cyan-300">
@@ -98,6 +111,9 @@ export default async function MarketingLayout({
           </div>
         </div>
       </footer>
-    </div>
+      <Toaster />
+        </div>
+      </body>
+    </html>
   );
 }

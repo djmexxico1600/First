@@ -70,3 +70,8 @@ class Analytics {
 }
 
 export const analytics = new Analytics();
+
+// Export a simple track function for convenience
+export async function track(event: string, properties?: EventProperties, _userId?: string) {
+  return analytics.track(event, properties);
+}

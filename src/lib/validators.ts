@@ -12,8 +12,8 @@ export const subscriptionSchema = z.object({
 export const artistUploadSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
   artist: z.string().min(1, 'Artist name is required').max(255),
-  genre: z.string().optional().max(100),
-  upc: z.string().optional().max(50),
+  genre: z.string().max(100).optional(),
+  upc: z.string().max(50).optional(),
   fileName: z.string().min(1, 'File name is required'),
   fileType: z.string().regex(/^audio\//, 'File must be an audio file'),
 });

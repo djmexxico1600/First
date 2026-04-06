@@ -73,3 +73,9 @@ export function createRateLimitMiddleware(limit: number = 10, windowMs: number =
     }
   };
 }
+
+// Simple rate limit function for async use
+export async function rateLimit(key: string, limit: number = 10, windowMs: number = 60000) {
+  const allowed = rateLimiter.check(key, limit, windowMs);
+  return { success: allowed };
+}
