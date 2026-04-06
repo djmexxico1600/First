@@ -1,0 +1,10 @@
+/* 
+  This directory contains auto-generated Drizzle migrations.
+  
+  To generate migrations, run:
+  npm run db:generate
+  
+  Migration files will be created automatically in this directory.
+*/
+
+export {};
