@@ -1,7 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "djmexxicoexclusives",
-  "type": "service",
   "compatibility_date": "2026-04-06",
   "observability": {
     "enabled": true
@@ -9,11 +8,6 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "vars": {
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
-    "NEXT_PUBLIC_APP_URL": ""
-  },
   "env": {
     "production": {
       "routes": [
