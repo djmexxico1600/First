@@ -5,6 +5,7 @@ const config: OpenNextConfig = {
     override: {
       wrapper: 'cloudflare-node',
       converter: 'edge',
+      proxyExternalRequest: 'fetch',
       // Use Cloudflare Cache API for ISR
       incrementalCache: 'dummy',
       tagCache: 'dummy',
@@ -12,11 +13,15 @@ const config: OpenNextConfig = {
     },
   },
 
+  // node:crypto must be treated as external for Cloudflare Workers
+  edgeExternals: ['node:crypto'],
+
   middleware: {
     external: true,
     override: {
       wrapper: 'cloudflare-edge',
       converter: 'edge',
+      proxyExternalRequest: 'fetch',
     },
   },
 };
