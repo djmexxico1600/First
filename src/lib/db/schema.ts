@@ -239,3 +239,98 @@ export const referralsRelations = relations(
     referredUser: one(users, { fields: [referrals.referredUserId], references: [users.id] }),
   })
 );
+
+// ─── Exclusive Drops Table ──────────────────────────────────────────────────
+// Time-limited or quantity-limited exclusive releases gated by subscription tier.
+export const dropStatusEnum = pgEnum('drop_status', ['scheduled', 'live', 'ended', 'cancelled']);
+
+// @ts-ignore - Known Drizzle type inference limitation
+export const drops = pgTable(
+  'drops',
+  {
+    id: varchar('id', { length: 255 }).primaryKey().notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    // Minimum tier required to access this drop
+    requiredTier: tierEnum('required_tier').default('basic').notNull(),
+    // R2 key for the drop asset (track, pack, etc.)
+    r2Key: varchar('r2_key', { length: 1024 }),
+    // Optional: limit total number of redeems (null = unlimited)
+    maxRedeems: integer('max_redeems'),
+    currentRedeems: integer('current_redeems').default(0).notNull(),
+    status: dropStatusEnum('status').default('scheduled').notNull(),
+    scheduledAt: timestamp('scheduled_at'),
+    endsAt: timestamp('ends_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    statusIdx: index('drop_status_idx').on(table.status),
+    scheduledIdx: index('drop_scheduled_idx').on(table.scheduledAt),
+  })
+);
+
+// Tracks which users have redeemed a drop
+// @ts-ignore - Known Drizzle type inference limitation
+export const dropRedeems = pgTable(
+  'drop_redeems',
+  {
+    id: varchar('id', { length: 255 }).primaryKey().notNull(),
+    dropId: varchar('drop_id', { length: 255 })
+      .notNull()
+      .references(() => drops.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    redeemedAt: timestamp('redeemed_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    dropUserIdx: index('drop_redeem_drop_user_idx').on(table.dropId, table.userId),
+    userIdx: index('drop_redeem_user_idx').on(table.userId),
+  })
+);
+
+// ─── Artist Contracts Table ─────────────────────────────────────────────────
+// Version-stamped agreements accepted by artists at upload / distribution time.
+export const contractTypeEnum = pgEnum('contract_type', [
+  'upload_agreement',
+  'distribution_agreement',
+  'management_agreement',
+]);
+
+// @ts-ignore - Known Drizzle type inference limitation
+export const contracts = pgTable(
+  'contracts',
+  {
+    id: varchar('id', { length: 255 }).primaryKey().notNull(),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: contractTypeEnum('type').notNull(),
+    // Semantic version of the contract template accepted, e.g. "1.0.0"
+    templateVersion: varchar('template_version', { length: 50 }).notNull(),
+    // IP/User-Agent stored for audit trail (GDPR-minimised — IP hashed)
+    ipHash: varchar('ip_hash', { length: 64 }),
+    userAgent: varchar('user_agent', { length: 512 }),
+    acceptedAt: timestamp('accepted_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('contract_user_idx').on(table.userId),
+    typeIdx: index('contract_type_idx').on(table.type),
+    userTypeIdx: index('contract_user_type_idx').on(table.userId, table.type),
+  })
+);
+
+// ─── Additional Relations ────────────────────────────────────────────────────
+export const dropsRelations = relations(drops, ({ many }) => ({
+  redeems: many(dropRedeems),
+}));
+
+export const dropRedeemsRelations = relations(dropRedeems, ({ one }) => ({
+  drop: one(drops, { fields: [dropRedeems.dropId], references: [drops.id] }),
+  user: one(users, { fields: [dropRedeems.userId], references: [users.id] }),
+}));
+
+export const contractsRelations = relations(contracts, ({ one }) => ({
+  user: one(users, { fields: [contracts.userId], references: [users.id] }),
+}));

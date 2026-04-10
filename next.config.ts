@@ -12,7 +12,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.cdn.example.com',
+        // Custom R2 public domain, e.g. pub.djmexxico.com
+        hostname: '*.djmexxico.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
       },
     ],
   },

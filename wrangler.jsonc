@@ -1,0 +1,86 @@
+{
+  // Cloudflare Workers deployment configuration for djmexxico Hub
+  // Managed via: npx wrangler deploy
+  // Secrets set via: npx wrangler secret put SECRET_NAME
+  "name": "djmexxico-hub",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2024-12-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Route all traffic through this Worker
+  "routes": [
+    {
+      "pattern": "djmexxico.com/*",
+      "zone_name": "djmexxico.com"
+    },
+    {
+      "pattern": "www.djmexxico.com/*",
+      "zone_name": "djmexxico.com"
+    }
+  ],
+
+  // Assets served from .open-next/assets
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // R2 bucket binding for file storage
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "djmexxico-prod"
+    }
+  ],
+
+  // KV namespace for edge caching (beat metadata, public catalog)
+  "kv_namespaces": [
+    {
+      "binding": "KV_CACHE",
+      "id": "REPLACE_WITH_KV_NAMESPACE_ID"
+    }
+  ],
+
+  // Hyperdrive for pooled Neon Postgres connection at the edge
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "REPLACE_WITH_HYPERDRIVE_CONFIG_ID"
+    }
+  ],
+
+  // Environment variables (non-secret, build-time safe)
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://djmexxico.com",
+    "NODE_ENV": "production"
+  },
+
+  // Observability: enable Workers Analytics Engine
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // Preview / staging environment
+  "env": {
+    "staging": {
+      "name": "djmexxico-hub-staging",
+      "routes": [
+        {
+          "pattern": "staging.djmexxico.com/*",
+          "zone_name": "djmexxico.com"
+        }
+      ],
+      "vars": {
+        "NEXT_PUBLIC_APP_URL": "https://staging.djmexxico.com",
+        "NODE_ENV": "production"
+      },
+      "r2_buckets": [
+        {
+          "binding": "R2_BUCKET",
+          "bucket_name": "djmexxico-staging"
+        }
+      ]
+    }
+  }
+}

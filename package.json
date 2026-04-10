@@ -52,6 +52,7 @@
     "stripe": "^14.0.0",
     "svix": "^1.15.0",
     "tailwind-merge": "^2.2.0",
+    "wavesurfer.js": "^7.12.6",
     "zod": "^3.22.0"
   },
   "devDependencies": {

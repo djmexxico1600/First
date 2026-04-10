@@ -40,6 +40,19 @@ export async function getPresignedDownloadUrl(
   return getSignedUrl(s3Client, command, { expiresIn });
 }
 
+/**
+ * Public CDN URL for non-protected assets (artwork, 30-sec previews).
+ * Private assets (full tracks, stems) must use getPresignedDownloadUrl instead.
+ */
 export function getPublicR2Url(key: string): string {
-  return `https://${process.env.NEXT_PUBLIC_R2_BUCKET_NAME}.cdn.example.com/${key}`;
+  const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID;
+  const bucket = process.env.NEXT_PUBLIC_R2_BUCKET_NAME;
+  // Custom domain pattern: configure a Cloudflare R2 custom domain in the dashboard
+  // pointing pub.djmexxico.com → the R2 bucket for zero-egress public CDN.
+  const customDomain = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN;
+  if (customDomain) {
+    return `https://${customDomain}/${key}`;
+  }
+  // Fallback: Cloudflare R2 public URL (requires bucket to have public access enabled)
+  return `https://${accountId}.r2.cloudflarestorage.com/${bucket}/${key}`;
 }

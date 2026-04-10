@@ -1,0 +1,133 @@
+name: Post-Deploy Smoke Tests
+
+on:
+  # Runs after the Deploy workflow completes successfully
+  workflow_run:
+    workflows: ['Deploy to Cloudflare Workers']
+    types: [completed]
+    branches: [main]
+  # Also allow manual trigger
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL to test (defaults to production)'
+        required: false
+        default: 'https://djmexxico.com'
+
+jobs:
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    # Only run on successful deploys
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 5
+
+    env:
+      TARGET: ${{ github.event.inputs.target_url || 'https://djmexxico.com' }}
+
+    steps:
+      - name: Health check — /api/health
+        run: |
+          echo "Testing $TARGET/api/health"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$TARGET/api/health")
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          STATUS=$(echo "$RESPONSE" | tail -n1)
+
+          echo "Status: $STATUS"
+          echo "Body: $BODY"
+
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check returned HTTP $STATUS"
+            exit 1
+          fi
+
+          # Verify response has expected keys
+          echo "$BODY" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          assert data.get('status') in ('healthy', 'degraded'), f'Unexpected status: {data}'
+          assert 'checks' in data, 'No checks key in response'
+          print('✅ Health endpoint structure valid')
+          print(f'   DB: {data[\"checks\"].get(\"database\", {})}')
+          print(f'   R2: {data[\"checks\"].get(\"r2\", {})}')
+          "
+
+      - name: Homepage loads
+        run: |
+          echo "Testing $TARGET"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Homepage returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Homepage OK (HTTP $STATUS)"
+
+      - name: Beats page loads
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET/beats")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ /beats returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ /beats OK (HTTP $STATUS)"
+
+      - name: Management page loads
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET/management")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ /management returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ /management OK (HTTP $STATUS)"
+
+      - name: Terms page loads
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET/terms")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ /terms returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ /terms OK (HTTP $STATUS)"
+
+      - name: Privacy page loads
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET/privacy")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ /privacy returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ /privacy OK (HTTP $STATUS)"
+
+      - name: Stripe webhook endpoint exists (HEAD)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X HEAD "$TARGET/api/webhooks/stripe")
+          # 405 Method Not Allowed is acceptable (POST only endpoint)
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "405" ]; then
+            echo "❌ /api/webhooks/stripe returned unexpected HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Stripe webhook endpoint reachable (HTTP $STATUS)"
+
+      - name: Security headers present
+        run: |
+          HEADERS=$(curl -s -I "$TARGET")
+          echo "$HEADERS"
+
+          # Check for basic security headers set by Cloudflare
+          if ! echo "$HEADERS" | grep -qi "x-content-type-options"; then
+            echo "⚠️  Missing X-Content-Type-Options header"
+          else
+            echo "✅ X-Content-Type-Options present"
+          fi
+
+          if ! echo "$HEADERS" | grep -qi "strict-transport-security"; then
+            echo "⚠️  Missing HSTS header (should be set by Cloudflare)"
+          else
+            echo "✅ HSTS present"
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Smoke tests failed after deploy to $TARGET"
+          echo "Check Cloudflare Workers dashboard for error logs."

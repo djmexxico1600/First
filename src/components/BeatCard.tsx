@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { Button, Badge } from '@/components/index';
 import { createBeatCheckoutSession } from '@/lib/stripe/actions';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
 
 interface BeatPurchaseProps {
   beatId: string;
   beatTitle: string;
   leasePrice: number;
   exclusivePrice: number;
+  previewUrl?: string | null;
   genre?: string;
   bpm?: number;
 }
@@ -18,13 +20,13 @@ export function BeatPurchaseCard({
   beatTitle,
   leasePrice,
   exclusivePrice,
+  previewUrl,
   genre,
   bpm,
 }: BeatPurchaseProps) {
   const [selectedLicense, setSelectedLicense] = useState<'lease' | 'exclusive'>('lease');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
 
   const price = selectedLicense === 'lease' ? leasePrice : exclusivePrice;
 
@@ -59,14 +61,11 @@ export function BeatPurchaseCard({
           {bpm && <Badge variant="default">{bpm} BPM</Badge>}
         </div>
 
-        {/* Preview Button */}
-        {false && (
-          <button
-            onClick={() => setShowPreview(!showPreview)}
-            className="mb-4 text-sm text-cyan-400 hover:text-cyan-300 transition"
-          >
-            {showPreview ? '⏸ Stop Preview' : '▶️ Play Preview'}
-          </button>
+        {/* Waveform Preview */}
+        {previewUrl && (
+          <div className="mb-4">
+            <WaveformPlayer previewUrl={previewUrl} beatTitle={beatTitle} />
+          </div>
         )}
 
         {/* License Selection */}
@@ -152,6 +151,7 @@ export function BeatGrid({ beats }: { beats: any[] }) {
           beatTitle={beat.title}
           leasePrice={beat.leasePrice}
           exclusivePrice={beat.exclusivePrice}
+          previewUrl={beat.previewUrl}
           genre={beat.genre}
           bpm={beat.bpm}
         />
