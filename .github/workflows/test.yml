@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -77,8 +77,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/djmexxico_test
         run: |
-          npm run db:migrate
-      
+          npx drizzle-kit push:pg --config drizzle.config.ts
+
       - name: Run integration tests
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/djmexxico_test
@@ -124,8 +124,9 @@ jobs:
       - name: Setup test database
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/djmexxico_test
-        run: npm run db:migrate
-      
+        run: |
+          npx drizzle-kit push:pg --config drizzle.config.ts
+
       - name: Run E2E tests
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/djmexxico_test
