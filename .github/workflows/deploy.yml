@@ -24,6 +24,15 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+
       - name: Install dependencies
         run: npm ci
 
@@ -46,11 +55,21 @@ jobs:
           NEXT_PUBLIC_R2_BUCKET_NAME: ${{ secrets.NEXT_PUBLIC_R2_BUCKET_NAME }}
 
       - name: Deploy to Cloudflare Workers
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
+      - name: Skip deploy (CLOUDFLARE_API_TOKEN not configured)
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' }}
+        run: |
+          echo "⚠️  CLOUDFLARE_API_TOKEN secret not set. Skipping Cloudflare deploy."
+          echo "To enable: Settings → Secrets → Actions → New secret: CLOUDFLARE_API_TOKEN"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Post-deploy health check
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.NEXT_PUBLIC_APP_URL != '' }}
         run: |
           echo "Waiting 10 seconds for deployment to propagate..."
           sleep 10
@@ -60,3 +79,6 @@ jobs:
             exit 1
           fi
           echo "✅ Health check passed (HTTP $STATUS)"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
