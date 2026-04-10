@@ -65,7 +65,7 @@
     "@vitest/coverage-v8": "^1.0.0",
     "@vitest/ui": "^1.0.0",
     "autoprefixer": "^10.4.0",
-    "drizzle-kit": "^0.22.8",
+    "drizzle-kit": "^0.21.4",
     "eslint": "^8.50.0",
     "eslint-config-next": "^15.0.0",
     "happy-dom": "^12.10.0",
