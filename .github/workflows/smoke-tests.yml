@@ -4,7 +4,6 @@ on:
   workflow_run:
     workflows: ['Deploy to Cloudflare Workers']
     types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       target_url:
@@ -12,18 +11,12 @@ on:
         required: false
         default: 'https://djmexxico.com'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   smoke-tests:
     name: Smoke Tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Only run when the deploy workflow actually succeeded
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
 
     env:
       TARGET: ${{ github.event.inputs.target_url || 'https://djmexxico.com' }}
