@@ -27,14 +27,12 @@ jobs:
         id: connectivity
         run: |
           echo "Checking connectivity to $TARGET ..."
-          HTTP=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 --connect-timeout 5 "$TARGET" 2>/dev/null)
-          CURL_EXIT=$?
-          if [ $CURL_EXIT -eq 0 ]; then
+          if curl -s -o /dev/null --max-time 10 --connect-timeout 5 "$TARGET" 2>/dev/null; then
             echo "reachable=true" >> "$GITHUB_OUTPUT"
-            echo "✅ $TARGET is reachable (HTTP $HTTP)"
+            echo "✅ $TARGET is reachable"
           else
             echo "reachable=false" >> "$GITHUB_OUTPUT"
-            echo "⚠️  Cannot reach $TARGET (curl exit $CURL_EXIT) — deploy token may not be configured yet"
+            echo "⚠️  Cannot reach $TARGET — CLOUDFLARE_API_TOKEN not configured yet, smoke tests will skip"
           fi
 
       - name: Health check — /api/health
